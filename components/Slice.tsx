@@ -4,11 +4,13 @@ import { colorFor } from "../utils/colors";
 export const Slice = ({
   index,
   spinPie,
-  radius
+  radius,
+  highlight
 }: {
   index: number;
   spinPie: SpinPie;
   radius: number;
+  highlight: boolean;
 }) => {
   const y = (t: number) => radius * Math.cos(t);
   const x = (t: number) => radius * Math.sin(t);
@@ -35,7 +37,8 @@ export const Slice = ({
           href={`#path-${index}`}
           startOffset="50%"
           dominantBaseline="middle"
-          fontSize={20}
+          fontSize={highlight ? "1.5em" : "1em"}
+          fill={highlight ? "white" : "black"}
         >
           {spinPie.value}
         </textPath>

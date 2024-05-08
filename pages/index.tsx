@@ -5,10 +5,15 @@ import { useState, useEffect, useRef } from "react";
 import { Slice } from "../components/Slice";
 import { SpinPie } from "../types/SpinPie";
 import { colorFor } from "../utils/colors";
-import { getRandomSortedNumbers } from "../utils/numbers";
+import { getRandomSortedNumbers, isPrime } from "../utils/numbers";
+
+import startSound from "../sounds/start.wav";
+import endSound from "../sounds/end.wav";
 
 const Home: NextPage = () => {
   const spinner = useRef<SVGGElement>(null);
+  const startAudio = useRef<HTMLAudioElement>(null);
+  const endAudio = useRef<HTMLAudioElement>(null);
   const [spinPieValues, setSpinPieValues] = useState<number[]>([]);
   const [chosen, setChosen] = useState<SpinPie>();
   const [showChosen, setShowChosen] = useState<boolean>(false);
@@ -18,6 +23,19 @@ const Home: NextPage = () => {
     width: number;
   }>({ height: 450, width: 450 });
   const radius = width / 2;
+
+  const playStartSound = () => {
+    if (startAudio.current) {
+      startAudio.current.play();
+    }
+  };
+
+  // Function to play winner sound
+  const playEndSound = () => {
+    if (endAudio.current) {
+      endAudio.current.play();
+    }
+  };
 
   const interval = (number: number) => (2 * Math.PI) / number;
   const slices = (number: number): SpinPie[] => {
@@ -34,6 +52,7 @@ const Home: NextPage = () => {
 
   const startSpinning = () => {
     setSpinning(true);
+    playStartSound();
     setShowChosen(false);
     const winnerIndex = Math.floor(Math.random() * spinPieValues.length);
     const {
@@ -41,7 +60,7 @@ const Home: NextPage = () => {
       minAngle: min,
       maxAngle: max
     } = slices(spinPieValues.length)[winnerIndex];
-    const angle = ((Math.random() * (max - min) + min) * 180) / Math.PI + 180;
+    const angle = ((0.5 * (max - min) + min) * 180) / Math.PI + 180;
     const winner = { value, minAngle: angle, maxAngle: angle };
 
     setChosen(winner);
@@ -49,6 +68,7 @@ const Home: NextPage = () => {
 
   const finishSpinning = () => {
     setSpinning(false);
+    playEndSound();
     if (spinner.current) {
       spinner.current.style.transform = `rotate(${chosen?.maxAngle}deg)`;
       spinner.current.classList.remove(styles.rotating);
@@ -85,7 +105,7 @@ const Home: NextPage = () => {
     return () => query.removeEventListener("change", setSVGDimensions);
   }, []);
 
-  const resetspinner = () => {
+  const resetSpinner = () => {
     if (spinner.current) {
       spinner.current.style.transform = "rotate(0deg)";
       spinner.current.classList.remove(styles.rotating);
@@ -94,8 +114,8 @@ const Home: NextPage = () => {
 
   const reset = () => {
     setChosen(undefined);
-    resetspinner();
-    setShowChosen(true);
+    resetSpinner();
+    setShowChosen(false);
     setSpinPieValues(getRandomSortedNumbers(20));
   };
 
@@ -109,7 +129,7 @@ const Home: NextPage = () => {
 
       <main className="flex flex-col justify-center items-center">
         <h1 className="h-24 text-8xl dark:text-white">
-          {showChosen && chosen?.value}
+          {showChosen && (isPrime(chosen?.value || 0) ? "Winner" : "Loser")}
         </h1>
         <svg height={height + 50} width={width}>
           <g transform={`matrix(1 0 0 1 ${radius} ${(height + 50) / 2})`}>
@@ -121,6 +141,7 @@ const Home: NextPage = () => {
                   spinPie={slice}
                   index={index}
                   radius={radius}
+                  highlight={!spinning && chosen?.value === slice.value}
                 />
               ))}
             </g>
@@ -148,6 +169,13 @@ const Home: NextPage = () => {
           </button>
         </div>
       </main>
+
+      <audio ref={startAudio} controls hidden>
+        <source src={startSound} type="audio/wav" />
+      </audio>
+      <audio ref={endAudio} controls hidden>
+        <source src={endSound} type="audio/wav" />
+      </audio>
     </>
   );
 };
