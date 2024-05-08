@@ -7,9 +7,6 @@ import { SpinPie } from "../types/SpinPie";
 import { colorFor } from "../utils/colors";
 import { getRandomSortedNumbers, isPrime } from "../utils/numbers";
 
-import startSound from "../sounds/start.wav";
-import endSound from "../sounds/end.wav";
-
 const Home: NextPage = () => {
   const spinner = useRef<SVGGElement>(null);
   const startAudio = useRef<HTMLAudioElement>(null);
@@ -171,10 +168,10 @@ const Home: NextPage = () => {
       </main>
 
       <audio ref={startAudio} controls hidden>
-        <source src={startSound} type="audio/wav" />
+        <source src="./sounds/start.wav" type="audio/wav" />
       </audio>
       <audio ref={endAudio} controls hidden>
-        <source src={endSound} type="audio/wav" />
+        <source src="./sounds/end.wav" type="audio/wav" />
       </audio>
     </>
   );
